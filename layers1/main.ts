@@ -6,16 +6,16 @@ import { Database } from "jsr:@db/sqlite@0.11";
 
 const app = new Hono();
 const db = new Database(":memory:");
-db.exec("CREATE TABLE visits(id INTEGER, timeUnixMs INTEGER)")
+db.exec("CREATE TABLE visits(id INTEGER, timeUnix INTEGER)")
 
 
 // Endpoints
 // ---------------------------------------
 
 app.get("/", (c) => {
-  const now = Temporal.Now.instant().epochMilliseconds;
+  const now = Temporal.Now.instant().epochMilliseconds / 1000;
   const id = Math.floor(Math.random() * 2_000_000_000);
-  db.exec("INSERT INTO visits (id, timeUnixMs) VALUES(?, ?)", id, now);
+  db.exec("INSERT INTO visits (id, timeUnix) VALUES(?, ?)", id, now);
 
   return c.text("Your visitor id was "+id);
 });

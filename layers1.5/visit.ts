@@ -1,9 +1,9 @@
 export class Visit {
-    id: number;
-    timeUnixMs: number
+  id: number;
+  timeUnix: number;
 
-    constructor(id: number, timeUnixMs: number) {
-        this.id = id;
-        this.timeUnixMs = timeUnixMs;
-    }
+  constructor(id: number, timeUnixMs: number) {
+    this.id = id;
+    this.timeUnix = timeUnixMs;
+  }
 }

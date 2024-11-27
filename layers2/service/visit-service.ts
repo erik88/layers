@@ -1,35 +1,27 @@
 import { Hono } from "@hono/hono";
-import { Database } from "jsr:@db/sqlite@0.11";
+import { VisitRepository } from "../infrastructure/visit-repository.ts";
 import { Visit } from "./visit.ts";
 
 // Initialization
 // ---------------------------------------
 
 const app = new Hono();
-const db = new Database(":memory:");
-db.exec("CREATE TABLE visits(id INTEGER, timeUnix INTEGER)");
+const visitRepository = new VisitRepository();
 
 // Endpoints
 // ---------------------------------------
 
 app.get("/", (c) => {
-  const now = Temporal.Now.instant().epochMilliseconds / 1000;
+  const now = Temporal.Now.instant();
   const id = Math.floor(Math.random() * 2_000_000_000);
-  const visit = new Visit(id, now);
 
-  db.exec(
-    "INSERT INTO visits (id, timeUnix) VALUES(?, ?)",
-    visit.id,
-    visit.timeUnix,
-  );
+  visitRepository.addVisit(new Visit(id, now));
 
   return c.text("Your visitor id was " + id);
 });
 
 app.get("/stats", (c) => {
-  const stmt = db.prepare("SELECT id, timeUnix FROM visits");
-
-  const visits = stmt.values().map(([id, timeUnix]) => new Visit(id, timeUnix));
+  const visits = visitRepository.getAllVisits();
 
   return c.html(
     `<style>
@@ -39,10 +31,12 @@ app.get("/stats", (c) => {
     <table>
       <tr>
         <th>Id</th>
-        <th>Time (unix seconds)</th>
+        <th>Time</th>
       </tr>
     ${
-      visits.map((v) => `<tr><td>${v.id}</td><td>${v.timeUnix}</td></tr>`)
+      visits.map((v) =>
+        `<tr><td>${v.id}</td><td>${v.time.toLocaleString()}</td></tr>`
+      )
         .join("")
     }
       </table>
